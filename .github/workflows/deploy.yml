@@ -1,0 +1,34 @@
+name: Deploy NGINX to EC2
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  # You can change this version to trigger a new deployment
+  NGINX_IMAGE_TAG: "1.24"
+
+jobs:
+  deploy:
+    name: Deploy NGINX Container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2 instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            # Define the image name using the environment variable
+            IMAGE_NAME="nginx:${{ env.NGINX_IMAGE_TAG }}"
+
+            # Pull the specified image from Docker Hub
+            docker pull $IMAGE_NAME
+
+            # Stop and remove the old container, ignoring errors if it doesn't exist
+            docker stop nginx-server || true
+            docker rm nginx-server || true
+
+            # Run the new container with the specified image
+            docker run -d --name nginx-server -p 80:80 $IMAGE_NAME
