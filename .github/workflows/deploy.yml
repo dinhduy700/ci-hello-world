@@ -1,4 +1,4 @@
-name: Deploy NGINX to EC2
+name: Deploy NGINX to EC2-30092158
 
 on:
   push:
